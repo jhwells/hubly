@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: utf8 -*-
 
 # NOTE: jw: what is an 'appropriate IP Address' [sic] in a subnet? assume "x.y.z.1", since
@@ -21,13 +21,14 @@ backend_resources = [
     ]
 
 
-def calculateRoutes(message, recipients, resources=backend_resources):
+def calculateRoutes(message, recipients, resources=backend_resources, sort_resources=False):
     """Calculate routes using smallest number of requests possible.
 
     Args:
         message: the message to send.
         recipients: a list of recipients
-        resources: a list of dictionaries used to compute optimum routes
+        resources: a list of dictionaries used to compute optimum routes. (default provided if ommitted)
+        sort_resources: resources will be sorted in decsending order of throughput
     Raises:
         TypeError: if recipients is not a list
         ValueError: if recipients is empty
@@ -46,34 +47,46 @@ def calculateRoutes(message, recipients, resources=backend_resources):
     # sort the resource in reverse order of throughput, since requirement is to
     # utilize the smallest number of requests possible
 
-    # TODO: jw: sorting everytime could be redundant and unecessary if the list is presorted
-    resources.sort(key=lambda x: x['throughput'], reverse=True)
-    #print resources
+    if sort_resources:
+        resources.sort(key=lambda x: x['throughput'], reverse=True)
+    else:
+        # if there is more than one resource make sure the throughput of the
+        # last is less than that of the second to last otherwise fail-fast
+        print "{} {} {}".format(len(resources),resources[-1]['throughput'], resources[2]['throughput'])
+        print "sort_resources = {}".format(sort_resources)
+        assert len(resources)>1 and resources[-1]['throughput'] < resources[-2]['throughput']
 
     # initialize result dict with the message
     result = { "message": message, "routes":[] }
 
-    recipients_processed = 0
+    processed = 0
+    last_throughput = None
     for category in resources:
 
-        recipients_remaining = len(recipients) - recipients_processed
+        recipients_remaining = len(recipients) - processed
+        throughput = category['throughput']
+
+        # confirm that subsequent throughputs reduce 
+        assert last_throughput > throughput if last_throughput else True
+        last_throughput = throughput
 
         # // operator emaphasizes integer division
-        eat = recipients_remaining // category['throughput'] * category['throughput']
+        chunks = recipients_remaining // throughput
 
-        if eat > 0:
-            # create a new route: contains ip and recipient list
-            route = {}
-            route['ip'] = category['relay_ip']
-            route['recipients'] = recipients[recipients_processed:recipients_processed+eat]
-            result['routes'].append(route)
-            recipients_processed += eat
+        if chunks > 0:
+            # create a new route for each chunk: a route contains ip and recipient list
+            for x in xrange(chunks):
+                route = {}
+                route['ip'] = category['relay_ip']
+                route['recipients'] = recipients[processed:processed+throughput]
+                result['routes'].append(route)
+                processed += throughput
 
             # check if we are done
-            if recipients_processed == len(recipients):
+            if processed == len(recipients):
                 break
 
-    assert (recipients_processed == len(recipients)), "didn't process len(recipients)!!)"
+    assert (processed == len(recipients)), "didn't process len(recipients)!!)"
 
     return result
 

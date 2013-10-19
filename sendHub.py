@@ -8,6 +8,9 @@
 # TODO: jw: use ip address manipulation library for ip addys instead of string
 # TODO: allow for various backend resource strategies
 
+
+from collections import Iterable
+
 # NOTE: throughput is given in msgs/request
 # NOTE: cost is dollars/request
 backend_resources = [
@@ -18,12 +21,27 @@ backend_resources = [
     ]
 
 
-def router(message, recipients, resources):
+def calculateRoutes(message, recipients, resources=backend_resources):
+    """Calculate routes using smallest number of requests possible.
+
+    Args:
+        message: the message to send.
+        recipients: a list of recipients
+        resources: a list of dictionaries used to compute optimum routes
+    Raises:
+        TypeError: if recipients is not a list
+        ValueError: if recipients is empty
+    """
     # TODO: jw: validate parameters and fail-fast
     # TODO: jw: if there is no throughput = 1 we need to ensure that there are
     #           enough throughput options to complete routing request
     # TODO: jw: check for valid and unique recipients
     # TODO: jw: add parameter to request cost
+
+
+    # check that recipients is a non-empty list
+    if not isinstance(recipients, Iterable):
+        raise TypeError, "{} is not iterable".format(recipients)
 
     # sort the resource in reverse order of throughput, since requirement is to
     # utilize the smallest number of requests possible
@@ -37,12 +55,11 @@ def router(message, recipients, resources):
 
     recipients_processed = 0
     for category in resources:
-        # integer division returns floor so x//y*y gives number of messages this
-        # category can process. using // operator to emaphasize integer division
+
         recipients_remaining = len(recipients) - recipients_processed
-        #print recipients_remaining
+
+        # // operator emaphasizes integer division
         eat = recipients_remaining // category['throughput'] * category['throughput']
-        print eat
 
         if eat > 0:
             # create a new route: contains ip and recipient list
@@ -52,21 +69,21 @@ def router(message, recipients, resources):
             result['routes'].append(route)
             recipients_processed += eat
 
-            #print result
-
             # check if we are done
             if recipients_processed == len(recipients):
                 break
 
-    #print "recipients processed {}".format(recipients_processed)
     assert (recipients_processed == len(recipients)), "didn't process len(recipients)!!)"
 
     return result
 
 
 if __name__ == "__main__":
-    print( router("hi", ["1",], backend_resources) )
-    print( router("hi", ["1","2","33","44"], backend_resources) )
-    print( router("hi", ["1","2","33","44", "55"], backend_resources) )
-    print( router("hi", range(11), backend_resources) )
-    print( router("hi", range(30), backend_resources) )
+    print( calculateRoutes("hi", ["1",], backend_resources) )
+    print( calculateRoutes("hi", ["1","2","33","44"], backend_resources) )
+    print( calculateRoutes("hi", ["1","2","33","44", "55"], backend_resources) )
+    print( calculateRoutes("hi", range(11), backend_resources) )
+    print( calculateRoutes("hi", range(30), backend_resources) )
+    print( calculateRoutes(3232 ,range(2), backend_resources) )
+    print( calculateRoutes("sdaf", 234, backend_resources) )
+    print( calculateRoutes("sdaf", 'sdddsccxfddfsdfa', backend_resources) )

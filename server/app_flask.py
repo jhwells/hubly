@@ -17,7 +17,7 @@ def calculate_routes():
 
 @app.route('/relays', methods=['GET'])
 def get_relays():
-    return jsonify(backend_resources)
+    return jsonify(resources=backend_resources)
 
 if __name__ == '__main__':
     app.run(debug=True)

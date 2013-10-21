@@ -21,7 +21,7 @@ backend_resources = [
     ]
 
 
-def calculateRoutes(message, recipients, resources=backend_resources, sort_resources=False):
+def calculate_routes(message, recipients, resources=backend_resources, sort_resources=False):
     """Calculate routes using smallest number of requests possible.
 
     Args:
@@ -92,11 +92,11 @@ def calculateRoutes(message, recipients, resources=backend_resources, sort_resou
 
 
 if __name__ == "__main__":
-    print( calculateRoutes("hi", ["1",], backend_resources) )
-    print( calculateRoutes("hi", ["1","2","33","44"], backend_resources) )
-    print( calculateRoutes("hi", ["1","2","33","44", "55"], backend_resources) )
-    print( calculateRoutes("hi", range(11), backend_resources) )
-    print( calculateRoutes("hi", range(30), backend_resources) )
-    print( calculateRoutes(3232 ,range(2), backend_resources) )
-    print( calculateRoutes("sdaf", 234, backend_resources) )
-    print( calculateRoutes("sdaf", 'sdddsccxfddfsdfa', backend_resources) )
+    print( calculate_routes("hi", ["1",], backend_resources) )
+    print( calculate_routes("hi", ["1","2","33","44"], backend_resources) )
+    print( calculate_routes("hi", ["1","2","33","44", "55"], backend_resources) )
+    print( calculate_routes("hi", range(11), backend_resources) )
+    print( calculate_routes("hi", range(30), backend_resources) )
+    print( calculate_routes(3232 ,range(2), backend_resources) )
+    print( calculate_routes("sdaf", 234, backend_resources) )
+    print( calculate_routes("sdaf", 'sdddsccxfddfsdfa', backend_resources) )

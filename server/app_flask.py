@@ -3,18 +3,25 @@ from flask import Flask
 from flask import jsonify
 from flask import make_response
 from flask import request
+from flask import g
+
+from subprocess import check_output
 
 from send_hub import calculate_routes
 from send_hub import backend_resources
 
 app = Flask(__name__)
 
+version = check_output(["git","describe"])[1:].strip()
 
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Not found' } ), 404)
 
-
+@app.after_request
+def after_request(response):
+    response.headers['X-send_hub-API-Version'] = version
+    return response
 
 @app.route('/')
 def index():

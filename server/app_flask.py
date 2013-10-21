@@ -13,7 +13,7 @@ def index():
 
 @app.route('/relays/routes', methods=['GET'])
 def calculate_routes():
-    pass
+    return jsonify(message="hi")
 
 @app.route('/relays', methods=['GET'])
 def get_relays():
